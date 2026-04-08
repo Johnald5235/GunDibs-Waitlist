@@ -97,22 +97,25 @@ function HomeContent() {
     return null;
   }
 
-  return (
-    <main className="relative min-h-screen bg-[#2a2f22] text-white antialiased">
-      <header className="flex justify-center pt-12 sm:pt-16">
-        <Image
-          src="/logo.png"
-          alt="GunDibs logo"
-          width={900}
-          height={300}
-          priority
-          className="h-auto w-[260px] object-contain sm:w-[380px] lg:w-[520px]"
-        />
-      </header>
+ return (
+  <main className="relative min-h-screen bg-[#2a2f22] text-white antialiased">
+    <header className="flex justify-center pt-4 sm:pt-1">
+      <Image
+        src="/logo.png"
+        alt="GunDibs logo"
+        width={900}
+        height={300}
+        priority
+        className="h-auto w-[220px] object-contain sm:w-[300px] lg:w-[420px]"
+      />
+    </header>
 
-      <section className="px-6 pt-10 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#d8c19a] sm:text-base">
-  GunDibs
+      <section className="px-6 pt-6 text-center">
+        <p className="mt-2 text-3xl font-bold tracking-[0.08em] text-[#d8c19a] sm:text-4xl">
+  G
+  <span className="text-[0.82em]">UN</span>
+  D
+  <span className="text-[0.82em]">IBS</span>
 </p>
         <h1 className="mx-auto max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
          Its more than a gun marketplace. It’s an ecosystem.
@@ -125,23 +128,23 @@ Welcome home.
 
       <section className="px-6 pt-10">
         <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/5 bg-[#323828]/90 p-6">
-            <h3 className="text-lg font-semibold">Marketplace</h3>
-            <p className="mt-2 text-sm leading-6 text-white/65">
+          <div className="rounded-2xl border border-[#7a5832] bg-[#86613a] px-6 py-7 text-[#140f0a] shadow-[0_10px_26px_rgba(0,0,0,0.24)]">
+            <h3 className="text-center text-2xl font-semibold">Marketplace</h3>
+            <p className="mt-4 text-center text-base leading-7 text-white">
               The core of the platform. Built to outperform everything you’ve used before.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#323828]/90 p-6">
-            <h3 className="text-lg font-semibold">Community</h3>
-            <p className="mt-2 text-sm leading-6 text-white/65">
+          <div className="rounded-2xl border border-[#7a5832] bg-[#86613a] px-6 py-7 text-[#140f0a] shadow-[0_10px_26px_rgba(0,0,0,0.24)]">
+            <h3 className="text-center text-2xl font-semibold">Community</h3>
+            <p className="mt-4 text-center text-base leading-7 text-white">
               The lifeblood of the platform. Where people connect, share knowledge, and actually help each other.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#323828]/90 p-6">
-            <h3 className="text-lg font-semibold">Access</h3>
-            <p className="mt-2 text-sm leading-6 text-white/65">
+          <div className="rounded-2xl border border-[#7a5832] bg-[#86613a] px-6 py-7 text-[#140f0a] shadow-[0_10px_26px_rgba(0,0,0,0.24)]">
+            <h3 className="text-center text-2xl font-semibold">Access</h3>
+            <p className="mt-4 text-center text-base leading-7 text-white">
               Where businesses have a direct line to their customer base — from deals to new releases and everything in between.
             </p>
           </div>
