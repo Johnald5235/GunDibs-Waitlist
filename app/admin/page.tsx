@@ -3,15 +3,9 @@ import { redirect } from "next/navigation";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import AdminDashboard from "./AdminDashboard";
+import type { WaitlistSignup } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
-
-type WaitlistSignup = {
-  id: string | number;
-  email: string;
-  user_type: string | null;
-  created_at: string | null;
-};
 
 const ADMIN_COOKIE_NAME = "gundibs_admin_session";
 
@@ -151,7 +145,12 @@ export default async function AdminPage({
     .select("id, email, user_type, created_at")
     .order("created_at", { ascending: false });
 
-  const signups: WaitlistSignup[] = data ?? [];
+  const signups: WaitlistSignup[] = (data ?? []).map((row) => ({
+    id: String(row.id),
+    email: row.email,
+    user_type: row.user_type,
+    created_at: row.created_at,
+  }));
 
   return (
     <main className="min-h-screen bg-[#11150f] px-6 py-10 text-white">
