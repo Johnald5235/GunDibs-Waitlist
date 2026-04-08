@@ -22,13 +22,7 @@ function dayKey(d: Date) {
 }
 
 export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] }) {
-  const {
-    momentum,
-    roleCounts,
-    cumulativeSeries,
-    last30Series,
-    sortedDesc,
-  } = useMemo(() => {
+  const { momentum, roleCounts, cumulativeSeries, last30Series, sortedDesc } = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sevenAgo = new Date(startOfToday);
@@ -60,29 +54,31 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
       byDay.set(k, (byDay.get(k) || 0) + 1);
     }
 
-    // Cumulative series across full history
     const sortedAsc = [...signups].sort(
       (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
+
     const cumulativeMap = new Map<string, number>();
     for (const s of sortedAsc) {
       const k = dayKey(new Date(s.created_at));
       cumulativeMap.set(k, (cumulativeMap.get(k) || 0) + 1);
     }
+
     const cumulativeSeries: { date: string; total: number }[] = [];
     let running = 0;
     const cumKeys = Array.from(cumulativeMap.keys()).sort();
+
     for (const k of cumKeys) {
       running += cumulativeMap.get(k) || 0;
       cumulativeSeries.push({ date: k, total: running });
     }
 
-    // Last 30 days series (fill empty days with 0)
     const last30Series: { date: string; count: number }[] = [];
     for (let i = 29; i >= 0; i--) {
       const d = new Date(startOfToday);
       d.setDate(d.getDate() - i);
       const k = dayKey(d);
+
       last30Series.push({
         date: `${d.getMonth() + 1}/${d.getDate()}`,
         count: byDay.get(k) || 0,
@@ -119,9 +115,8 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
 
   return (
     <>
-      {/* Momentum */}
-      <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-3">Momentum</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">Momentum</h2>
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {momentumCards.map((c) => (
           <div key={c.label} className="rounded-lg border border-gray-800 bg-gray-900 p-4">
             <div className="text-xs uppercase tracking-wide text-gray-500">{c.label}</div>
@@ -130,10 +125,9 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+      <div className="mb-10 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500 mb-3">
+          <div className="mb-3 text-xs uppercase tracking-wide text-gray-500">
             Cumulative Signups
           </div>
           <div className="h-64">
@@ -163,7 +157,7 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
         </div>
 
         <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500 mb-3">
+          <div className="mb-3 text-xs uppercase tracking-wide text-gray-500">
             Daily Signups (Last 30 Days)
           </div>
           <div className="h-64">
@@ -187,9 +181,8 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
         </div>
       </div>
 
-      {/* Role breakdown */}
-      <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-3">By Role</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">By Role</h2>
+      <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {roleCards.map((c) => (
           <div key={c.label} className="rounded-lg border border-gray-800 bg-gray-900 p-4">
             <div className="text-xs uppercase tracking-wide text-gray-500">{c.label}</div>
@@ -198,14 +191,13 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
         ))}
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-gray-800">
         <table className="w-full text-sm">
           <thead className="bg-gray-900 text-gray-400">
             <tr>
-              <th className="text-left px-4 py-3 font-medium">Email</th>
-              <th className="text-left px-4 py-3 font-medium">User Type</th>
-              <th className="text-left px-4 py-3 font-medium">Created At</th>
+              <th className="px-4 py-3 text-left font-medium">Email</th>
+              <th className="px-4 py-3 text-left font-medium">User Type</th>
+              <th className="px-4 py-3 text-left font-medium">Created At</th>
             </tr>
           </thead>
           <tbody>
