@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,22 @@ function buildPolylinePoints(values: number[], width: number, height: number, pa
     .join(" ");
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ password?: string }>;
+}) {
+  const { password } = await searchParams;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    throw new Error("Missing ADMIN_PASSWORD environment variable.");
+  }
+
+  if (password !== adminPassword) {
+    redirect("/");
+  }
+
   const { data, error } = await supabaseAdmin
     .from("waitlist_signups")
     .select("id, email, user_type, created_at")
