@@ -4,11 +4,21 @@ import Image from "next/image";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 
+const GIVEAWAY_OPTIONS = [
+  "Glock 19 Gen 6",
+  "HK VP9CC",
+  "Walther PDP",
+  "Smith & Wesson M&P9 M2.0 Compact OR",
+  "Other",
+];
+
 function HomeContent() {
   const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [userType, setUserType] = useState("Seller");
+  const [giveawayChoice, setGiveawayChoice] = useState("");
+  const [giveawayOtherText, setGiveawayOtherText] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,6 +38,19 @@ function HomeContent() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
+    const trimmedOther = giveawayOtherText.trim();
+
+    if (!giveawayChoice) {
+      setError("Please choose a giveaway option.");
+      return;
+    }
+
+    if (giveawayChoice === "Other" && !trimmedOther) {
+      setError("Please enter your choice.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -37,6 +60,8 @@ function HomeContent() {
         body: JSON.stringify({
           email,
           userType,
+          giveawayChoice,
+          giveawayOtherText: giveawayChoice === "Other" ? trimmedOther : "",
           website,
           formStartedAt,
         }),
@@ -203,7 +228,8 @@ function HomeContent() {
               Founding Seller status
             </h3>
             <p className="mt-4 text-center text-base leading-7 text-white">
-              Join the first wave of sellers and help define how GunDibs launches.
+              Join the first wave of sellers and help define how GunDibs
+              launches.
             </p>
           </div>
 
@@ -326,6 +352,41 @@ function HomeContent() {
                     <option>Creator</option>
                     <option>Just interested</option>
                   </select>
+                </div>
+
+                <div className="rounded-2xl border border-white/8 bg-[#3a4130] px-5 py-5">
+                  <label
+                    htmlFor="giveawayChoice"
+                    className="block text-sm font-semibold text-white"
+                  >
+                    What handgun would you most want to see given away to one
+                    founding member at the GunDibs launch?
+                  </label>
+
+                  <select
+                    id="giveawayChoice"
+                    required
+                    value={giveawayChoice}
+                    onChange={(e) => setGiveawayChoice(e.target.value)}
+                    className="mt-3 h-14 w-full rounded-lg border border-white/10 bg-[#3d4431] px-4 text-white"
+                  >
+                    <option value="">Select one</option>
+                    {GIVEAWAY_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  {giveawayChoice === "Other" ? (
+                    <input
+                      type="text"
+                      value={giveawayOtherText}
+                      onChange={(e) => setGiveawayOtherText(e.target.value)}
+                      placeholder="Enter your choice"
+                      className="mt-3 h-14 w-full rounded-lg border border-white/10 bg-[#3d4431] px-4 text-white"
+                    />
+                  ) : null}
                 </div>
 
                 <button
