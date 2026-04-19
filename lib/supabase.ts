@@ -1,4 +1,3 @@
-import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
@@ -16,5 +15,8 @@ export type WaitlistSignup = {
   id: string;
   email: string;
   user_type: string;
+  giveaway_choice: string | null;
+  giveaway_other_text: string | null;
   created_at: string;
+  verified_at: string | null;
 };

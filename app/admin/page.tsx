@@ -1,21 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, type WaitlistSignup } from "@/lib/supabase";
+import AdminDashboard from "./AdminDashboard";
 
 export const dynamic = "force-dynamic";
 
 const ADMIN_COOKIE_NAME = "gundibs_admin_session";
-
-type WaitlistSignupRow = {
-  id: string;
-  email: string;
-  user_type: string;
-  giveaway_choice: string | null;
-  giveaway_other_text: string | null;
-  created_at: string;
-  verified_at: string | null;
-};
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -141,25 +132,6 @@ function LoginCard({ showError }: { showError: boolean }) {
   );
 }
 
-function formatDate(value: string): string {
-  return new Date(value).toLocaleString();
-}
-
-function getDisplayedChoice(signup: WaitlistSignupRow): string {
-  const choice = signup.giveaway_choice?.trim();
-
-  if (!choice) {
-    return "—";
-  }
-
-  if (choice === "Other") {
-    const other = signup.giveaway_other_text?.trim();
-    return other ? `Other — ${other}` : "Other";
-  }
-
-  return choice;
-}
-
 export default async function AdminPage({
   searchParams,
 }: {
@@ -179,7 +151,7 @@ export default async function AdminPage({
     )
     .order("created_at", { ascending: false });
 
-  const signups: WaitlistSignupRow[] = (data ?? []).map((row) => ({
+  const signups: WaitlistSignup[] = (data ?? []).map((row) => ({
     id: String(row.id),
     email: String(row.email ?? ""),
     user_type: String(row.user_type ?? ""),
@@ -222,64 +194,7 @@ export default async function AdminPage({
             Failed to load waitlist signups: {supabaseError.message}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left">
-                <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.18em] text-white/55">
-                  <tr>
-                    <th className="px-4 py-4 font-semibold">Email</th>
-                    <th className="px-4 py-4 font-semibold">Joining As</th>
-                    <th className="px-4 py-4 font-semibold">Handgun Choice</th>
-                    <th className="px-4 py-4 font-semibold">Verified</th>
-                    <th className="px-4 py-4 font-semibold">Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {signups.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-6 text-sm text-white/60"
-                      >
-                        No signups yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    signups.map((signup) => (
-                      <tr
-                        key={signup.id}
-                        className="border-t border-white/10 align-top"
-                      >
-                        <td className="px-4 py-4 text-sm text-white">
-                          {signup.email}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-white/80">
-                          {signup.user_type}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-white/90">
-                          {getDisplayedChoice(signup)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {signup.verified_at ? (
-                            <span className="rounded-full border border-green-500/30 bg-green-500/10 px-2.5 py-1 text-xs font-semibold text-green-300">
-                              Verified
-                            </span>
-                          ) : (
-                            <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-1 text-xs font-semibold text-yellow-300">
-                              Pending
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-white/70">
-                          {formatDate(signup.created_at)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AdminDashboard signups={signups} />
         )}
       </div>
     </main>
