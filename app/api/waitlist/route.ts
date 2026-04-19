@@ -10,6 +10,8 @@ export const runtime = "nodejs";
 type WaitlistRequestBody = {
   email?: string;
   userType?: string;
+  giveawayChoice?: string;
+  giveawayOtherText?: string;
   website?: string;
   formStartedAt?: number;
 };
@@ -144,6 +146,8 @@ export async function POST(req: Request) {
     const body = (await req.json()) as WaitlistRequestBody;
     const email = normalizeEmail(body.email || "");
     const userType = (body.userType || "Unknown").trim();
+    const giveawayChoice = (body.giveawayChoice || "").trim();
+    const giveawayOtherText = (body.giveawayOtherText || "").trim();
     const website = (body.website || "").trim();
     const formStartedAt = Number(body.formStartedAt || 0);
     const domain = getEmailDomain(email);
@@ -165,6 +169,20 @@ export async function POST(req: Request) {
     if (!formStartedAt || Date.now() - formStartedAt < MIN_FORM_FILL_MS) {
       return NextResponse.json(
         { error: "Submission rejected." },
+        { status: 400 }
+      );
+    }
+
+    if (!giveawayChoice) {
+      return NextResponse.json(
+        { error: "Please choose a giveaway option." },
+        { status: 400 }
+      );
+    }
+
+    if (giveawayChoice === "Other" && !giveawayOtherText) {
+      return NextResponse.json(
+        { error: "Please enter your choice." },
         { status: 400 }
       );
     }
@@ -210,6 +228,9 @@ export async function POST(req: Request) {
         .from("waitlist_signups")
         .update({
           user_type: userType,
+          giveaway_choice: giveawayChoice,
+          giveaway_other_text:
+            giveawayChoice === "Other" ? giveawayOtherText : null,
           verification_token_hash: tokenHash,
           verification_token_expires_at: expiresAt,
           verified_at: null,
@@ -230,6 +251,9 @@ export async function POST(req: Request) {
           {
             email,
             user_type: userType,
+            giveaway_choice: giveawayChoice,
+            giveaway_other_text:
+              giveawayChoice === "Other" ? giveawayOtherText : null,
             verified_at: null,
             verification_token_hash: tokenHash,
             verification_token_expires_at: expiresAt,
