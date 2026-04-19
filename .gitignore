@@ -22,3 +22,4 @@ pnpm-debug.log*
 
 .prisma
 generated
+.env*.local
