@@ -21,82 +21,109 @@ function dayKey(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] }) {
-  const { momentum, roleCounts, cumulativeSeries, last30Series, sortedDesc } = useMemo(() => {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sevenAgo = new Date(startOfToday);
-    sevenAgo.setDate(sevenAgo.getDate() - 6);
-    const thirtyAgo = new Date(startOfToday);
-    thirtyAgo.setDate(thirtyAgo.getDate() - 29);
+function getDisplayedChoice(signup: WaitlistSignup) {
+  const choice = signup.giveaway_choice?.trim();
 
-    let today = 0;
-    let last7 = 0;
-    let last30 = 0;
+  if (!choice) {
+    return "—";
+  }
 
-    const roleCounts: Record<string, number> = {
-      Buyer: 0,
-      Seller: 0,
-      Dealer: 0,
-      Creator: 0,
-      "Just interested": 0,
-    };
+  if (choice === "Other") {
+    const other = signup.giveaway_other_text?.trim();
+    return other ? `Other — ${other}` : "Other";
+  }
 
-    const byDay = new Map<string, number>();
+  return choice;
+}
 
-    for (const s of signups) {
-      const created = new Date(s.created_at);
-      if (created >= startOfToday) today += 1;
-      if (created >= sevenAgo) last7 += 1;
-      if (created >= thirtyAgo) last30 += 1;
-      if (s.user_type in roleCounts) roleCounts[s.user_type] += 1;
-      const k = dayKey(created);
-      byDay.set(k, (byDay.get(k) || 0) + 1);
-    }
+export default function AdminDashboard({
+  signups,
+}: {
+  signups: WaitlistSignup[];
+}) {
+  const { momentum, roleCounts, cumulativeSeries, last30Series, sortedDesc } =
+    useMemo(() => {
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const sevenAgo = new Date(startOfToday);
+      sevenAgo.setDate(sevenAgo.getDate() - 6);
+      const thirtyAgo = new Date(startOfToday);
+      thirtyAgo.setDate(thirtyAgo.getDate() - 29);
 
-    const sortedAsc = [...signups].sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+      let today = 0;
+      let last7 = 0;
+      let last30 = 0;
 
-    const cumulativeMap = new Map<string, number>();
-    for (const s of sortedAsc) {
-      const k = dayKey(new Date(s.created_at));
-      cumulativeMap.set(k, (cumulativeMap.get(k) || 0) + 1);
-    }
+      const roleCounts: Record<string, number> = {
+        Buyer: 0,
+        Seller: 0,
+        Dealer: 0,
+        Creator: 0,
+        "Just interested": 0,
+      };
 
-    const cumulativeSeries: { date: string; total: number }[] = [];
-    let running = 0;
-    const cumKeys = Array.from(cumulativeMap.keys()).sort();
+      const byDay = new Map<string, number>();
 
-    for (const k of cumKeys) {
-      running += cumulativeMap.get(k) || 0;
-      cumulativeSeries.push({ date: k, total: running });
-    }
+      for (const s of signups) {
+        const created = new Date(s.created_at);
+        if (created >= startOfToday) today += 1;
+        if (created >= sevenAgo) last7 += 1;
+        if (created >= thirtyAgo) last30 += 1;
+        if (s.user_type in roleCounts) roleCounts[s.user_type] += 1;
 
-    const last30Series: { date: string; count: number }[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(startOfToday);
-      d.setDate(d.getDate() - i);
-      const k = dayKey(d);
+        const k = dayKey(created);
+        byDay.set(k, (byDay.get(k) || 0) + 1);
+      }
 
-      last30Series.push({
-        date: `${d.getMonth() + 1}/${d.getDate()}`,
-        count: byDay.get(k) || 0,
-      });
-    }
+      const sortedAsc = [...signups].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
 
-    const sortedDesc = [...signups].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+      const cumulativeMap = new Map<string, number>();
+      for (const s of sortedAsc) {
+        const k = dayKey(new Date(s.created_at));
+        cumulativeMap.set(k, (cumulativeMap.get(k) || 0) + 1);
+      }
 
-    return {
-      momentum: { total: signups.length, today, last7, last30 },
-      roleCounts,
-      cumulativeSeries,
-      last30Series,
-      sortedDesc,
-    };
-  }, [signups]);
+      const cumulativeSeries: { date: string; total: number }[] = [];
+      let running = 0;
+      const cumKeys = Array.from(cumulativeMap.keys()).sort();
+
+      for (const k of cumKeys) {
+        running += cumulativeMap.get(k) || 0;
+        cumulativeSeries.push({ date: k, total: running });
+      }
+
+      const last30Series: { date: string; count: number }[] = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(startOfToday);
+        d.setDate(d.getDate() - i);
+        const k = dayKey(d);
+
+        last30Series.push({
+          date: `${d.getMonth() + 1}/${d.getDate()}`,
+          count: byDay.get(k) || 0,
+        });
+      }
+
+      const sortedDesc = [...signups].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      return {
+        momentum: { total: signups.length, today, last7, last30 },
+        roleCounts,
+        cumulativeSeries,
+        last30Series,
+        sortedDesc,
+      };
+    }, [signups]);
 
   const momentumCards = [
     { label: "Total Signups", value: momentum.total },
@@ -115,11 +142,18 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
 
   return (
     <>
-      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">Momentum</h2>
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">
+        Momentum
+      </h2>
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {momentumCards.map((c) => (
-          <div key={c.label} className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">{c.label}</div>
+          <div
+            key={c.label}
+            className="rounded-lg border border-gray-800 bg-gray-900 p-4"
+          >
+            <div className="text-xs uppercase tracking-wide text-gray-500">
+              {c.label}
+            </div>
             <div className="mt-2 text-2xl font-semibold">{c.value}</div>
           </div>
         ))}
@@ -165,7 +199,11 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
               <BarChart data={last30Series}>
                 <CartesianGrid stroke="#1f2937" strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="#6b7280" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#6b7280" tick={{ fontSize: 11 }} allowDecimals={false} />
+                <YAxis
+                  stroke="#6b7280"
+                  tick={{ fontSize: 11 }}
+                  allowDecimals={false}
+                />
                 <Tooltip
                   contentStyle={{
                     background: "#000",
@@ -181,11 +219,18 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
         </div>
       </div>
 
-      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">By Role</h2>
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-gray-500">
+        By Role
+      </h2>
       <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {roleCards.map((c) => (
-          <div key={c.label} className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">{c.label}</div>
+          <div
+            key={c.label}
+            className="rounded-lg border border-gray-800 bg-gray-900 p-4"
+          >
+            <div className="text-xs uppercase tracking-wide text-gray-500">
+              {c.label}
+            </div>
             <div className="mt-2 text-2xl font-semibold">{c.value}</div>
           </div>
         ))}
@@ -197,6 +242,8 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
             <tr>
               <th className="px-4 py-3 text-left font-medium">Email</th>
               <th className="px-4 py-3 text-left font-medium">User Type</th>
+              <th className="px-4 py-3 text-left font-medium">Handgun Choice</th>
+              <th className="px-4 py-3 text-left font-medium">Verified</th>
               <th className="px-4 py-3 text-left font-medium">Created At</th>
             </tr>
           </thead>
@@ -205,6 +252,18 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
               <tr key={s.id} className="border-t border-gray-800">
                 <td className="px-4 py-3">{s.email}</td>
                 <td className="px-4 py-3">{s.user_type}</td>
+                <td className="px-4 py-3">{getDisplayedChoice(s)}</td>
+                <td className="px-4 py-3">
+                  {s.verified_at ? (
+                    <span className="inline-flex rounded-full border border-green-500/30 bg-green-500/10 px-2.5 py-1 text-xs font-semibold text-green-300">
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-1 text-xs font-semibold text-yellow-300">
+                      Pending
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-gray-400">
                   {new Date(s.created_at).toLocaleString()}
                 </td>
@@ -212,7 +271,7 @@ export default function AdminDashboard({ signups }: { signups: WaitlistSignup[] 
             ))}
             {sortedDesc.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                   No signups yet
                 </td>
               </tr>
